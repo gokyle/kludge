@@ -1,11 +1,12 @@
 package main
 
+import "github.com/gokyle/kludge/common"
 import "log"
 
-var reqQ chan *operation
+var reqQ chan *common.Request
 
 func startPool() {
-	reqQ = make(chan *operation, reqBuf)
+	reqQ = make(chan *common.Request, reqBuf)
 	for i := 0; i < poolSize; i++ {
 		go requestHandler(i)
 	}
@@ -18,7 +19,7 @@ func requestHandler(id int) {
 			log.Printf("worker %d returns", id)
 			return
 		}
-		switch req.OpCode {
+		switch req.Op.OpCode {
 
 		}
 	}

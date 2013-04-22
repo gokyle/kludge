@@ -2,15 +2,10 @@ package main
 
 import (
 	"encoding/gob"
+	"github.com/gokyle/kludge/common"
 	"log"
 	"net"
 )
-
-type operation struct {
-	OpCode byte
-	Key    []byte
-	Val    []byte
-}
 
 func listener() {
 	addr, err := net.ResolveTCPAddr("tcp", listenAddr)
@@ -35,9 +30,18 @@ func listener() {
 }
 
 func receiver(conn *net.TCPConn) {
+	req := new(common.Request)
 	dec := gob.NewDecoder(conn)
+	respc := make(chan common.Response)
 
-	var op = new(operation)
+	var op = new(common.Operation)
 	dec.Decode(op)
-	reqQ <- op
+	req.Op = op
+	req.Resp = respc
+	reqQ <- req
+
+	resp := <-respc
+
+	enc := gob.NewEncoder(conn)
+	enc.Encode(resp)
 }
