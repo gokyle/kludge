@@ -35,23 +35,25 @@ func ListKeys(w http.ResponseWriter, r *http.Request) {
 
 func GetKey(w http.ResponseWriter, r *http.Request) {
 	key := KeyID(r)
-	//	if key == "" {
-	//		ListKeys(w, r)
-	//		return
-	//	}
-	body, err := getKey(key)
+	body, ok, err := getKey(key)
 	if err != nil {
 		ServerError(w, err)
 		return
+	}
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
 	}
 	w.Write(body)
 }
 
 func DelKey(w http.ResponseWriter, r *http.Request) {
-	body, err := delKey(KeyID(r))
+	body, ok, err := delKey(KeyID(r))
 	if err != nil {
 		ServerError(w, err)
 		return
+	}
+	if !ok {
+		w.WriteHeader(http.StatusNotFound)
 	}
 	w.Write(body)
 }
@@ -73,17 +75,20 @@ func SetKey(w http.ResponseWriter, r *http.Request) {
 		ServerError(w, err)
 		return
 	}
-	body, err := setKey(key, value)
+	body, ok, err := setKey(key, value)
 	if err != nil {
 		ServerError(w, err)
 		return
+	}
+	if !ok {
+		w.WriteHeader(http.StatusCreated)
 	}
 	w.Write(body)
 }
 
 func Key(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s request to %s", r.Method, r.URL.String())
-	if r.URL.Path == "/key" || r.URL.Path == "/key/" {
+	if r.URL.Path == "/data" || r.URL.Path == "/data/" {
 		ListKeys(w, r)
 	} else {
 		switch r.Method {
@@ -101,7 +106,7 @@ func Key(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/key", Key)
-	http.HandleFunc("/key/", Key)
+	http.HandleFunc("/data", Key)
+	http.HandleFunc("/data/", Key)
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
