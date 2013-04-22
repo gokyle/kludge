@@ -17,16 +17,7 @@ func init() {
 	}
 }
 
-func newGet(key string) (op *common.Operation) {
-	op = new(common.Operation)
-	op = new(common.Operation)
-	op.OpCode = common.OpGet
-	op.Key = []byte(key)
-	return
-}
-
-func getKey(key string) (data []byte, err error) {
-	req := newGet(key)
+func sendRequest(req *common.Operation) (data []byte, err error) {
 	conn, err := net.DialTCP("tcp", nil, nodeAddr)
 	if err != nil {
 		log.Println("TCP connection failed: ", err.Error())
@@ -45,4 +36,36 @@ func getKey(key string) (data []byte, err error) {
 	}
 	data = resp.Body
 	return
+
+}
+
+func getKey(key string) ([]byte, error) {
+        op := &common.Operation{
+                OpCode: common.OpGet,
+                Key: []byte(key),
+            }
+        return sendRequest(op)
+}
+
+func setKey(key string, value []byte) ([]byte, error) {
+        op := &common.Operation{
+                OpCode: common.OpSet,
+                Key: []byte(key),
+                Val: value,
+        }
+        return sendRequest(op)
+}
+
+func delKey(key string) ([]byte, error) {
+        op := &common.Operation{
+                OpCode: common.OpDel,
+                Key: []byte(key),
+            }
+        return sendRequest(op)
+}
+
+func listKeys() ([]byte, error) {
+        return sendRequest(&common.Operation{
+                OpCode: common.OpLst,
+        })
 }
