@@ -5,7 +5,7 @@ import (
 	"github.com/gokyle/kludge/common"
 	"log"
 	"net"
-        "time"
+	"time"
 )
 
 func listener() {
@@ -32,7 +32,7 @@ func listener() {
 
 func receiver(conn net.Conn) {
 	defer conn.Close()
-        start := time.Now().UnixNano()
+	start := time.Now().UnixNano()
 	req := new(common.Request)
 	dec := gob.NewDecoder(conn)
 	respc := make(chan *common.Response)
@@ -48,6 +48,6 @@ func receiver(conn net.Conn) {
 
 	enc := gob.NewEncoder(conn)
 	enc.Encode(resp)
-        rtime := (time.Now().UnixNano() - start) / 1000
-        log.Printf("response time: %dms", rtime)
+	rtime := (time.Now().UnixNano() - start) / 1000
+	log.Printf("response time: %dms", rtime)
 }

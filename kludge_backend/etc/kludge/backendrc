@@ -1,1 +1,2 @@
 datastore = data
+pool_size = 16
