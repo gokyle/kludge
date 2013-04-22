@@ -118,15 +118,15 @@
 
 3.2.1. Listing Keys
 
-  An HTTP GET request to the '/key' endpoint will return a list
-  of the keys present in the system.
+  An HTTP GET request to the '/key' endpoint will return a JSON list of
+  the keys present in the system.
 
 3.1.2. Retrieving Key Values
 
-  An HTTP GET request to the '/key/:id' endpoint will return the
-  value of the key as an 'application/octet-stream' to be decoded
-  by the client application. The value of ':id' should be the key
-  whose value is desired.
+  An HTTP GET request to the '/key/:id' endpoint will return the value
+  of the key as an 'application/octet-stream' to be decoded by the
+  client application. The value of ':id' should be the key whose value
+  is desired.
 
 3.1.3 Setting and Changing Key Values
 
