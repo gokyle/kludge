@@ -47,20 +47,22 @@ func requestHandler(id int) {
 func store_get(op *common.Operation) (resp *common.Response) {
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
+	resp = new(common.Response)
 
 	data, err := ldb.Get(ropts, op.Key)
 	if err != nil {
 		log.Printf("error handling get from worker %d: %s",
 			op.WID, err.Error())
+		resp.ErrMsg = err.Error()
 	} else {
 		log.Printf("worker %d successfully completes GET", op.WID)
-		resp = new(common.Response)
 		resp.Body = data
 	}
 	return
 }
 
 func store_set(op *common.Operation) (resp *common.Response) {
+	resp = new(common.Response)
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
 
@@ -68,6 +70,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 	if err != nil {
 		log.Printf("worker %d failed to read key: %s", op.WID,
 			err.Error())
+		resp.ErrMsg = err.Error()
 		return
 	}
 
@@ -77,10 +80,11 @@ func store_set(op *common.Operation) (resp *common.Response) {
 	if err != nil {
 		log.Printf("worker %d failed to set key: %s", op.WID,
 			err.Error())
+		resp.ErrMsg = err.Error()
 		return
 	} else {
 		log.Printf("worker %d successfully wrote key", op.WID)
-		resp = new(common.Response)
+		resp.KeyOK = len(data) > 0
 		resp.Body = data
 	}
 	return
@@ -90,10 +94,12 @@ func store_del(op *common.Operation) (resp *common.Response) {
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
 
+	resp = new(common.Response)
 	data, err := ldb.Get(ropts, op.Key)
 	if err != nil {
 		log.Printf("worker %d failed to read key: %s", op.WID,
 			err.Error())
+		resp.ErrMsg = err.Error()
 		return
 	}
 
@@ -103,20 +109,20 @@ func store_del(op *common.Operation) (resp *common.Response) {
 	if err != nil {
 		log.Printf("worker %d failed to delete key: %s", op.WID,
 			err.Error())
+		resp.ErrMsg = err.Error()
 		return
 	} else {
-		if len(data) > 0 {
-			resp = new(common.Response)
-			resp.Body = []byte("ok")
-		}
+		resp.KeyOK = len(data) > 0
+		resp.Body = data
 	}
 	return
 }
 
 func store_lst(op *common.Operation) (resp *common.Response) {
+	resp = new(common.Response)
 	keys := make([]string, 0)
 	ro := levigo.NewReadOptions()
-	ro.SetFillCache(false)
+	ro.SetFillCache(true)
 	it := ldb.NewIterator(ro)
 	for it.SeekToFirst(); it.Valid(); it.Next() {
 		keys = append(keys, string(it.Key()))
@@ -125,8 +131,8 @@ func store_lst(op *common.Operation) (resp *common.Response) {
 	if err := it.GetError(); err != nil {
 		log.Printf("worker %d failed to iterate over keys: %s",
 			op.WID, err.Error())
+		resp.ErrMsg = err.Error()
 	} else {
-		resp = new(common.Response)
 		resp.Body, err = json.Marshal(keys)
 		if err != nil {
 			log.Printf("worker %d failed to create JSON response: %s",
