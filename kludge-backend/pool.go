@@ -30,7 +30,7 @@ func requestHandler(id int) {
 	}
 }
 
-func store_get(op common.Request) (resp common.Response) {
+func store_get(req common.Operation) (resp common.Response) {
 	ropts := levigo.NewReadOptions()
         ropts.SetVerifyChecksums(true)
 
@@ -39,9 +39,26 @@ func store_get(op common.Request) (resp common.Response) {
                 log.Printf("error handling get from worker %d: %s",
                         id, err.Error())
         } else {
-                log.Printf("worker %d successfully completes GET", id)
+                log.Printf("worker %d successfully completes GET", op.WID)
                 resp = new(common.Response)
                 resp.Body = data
         }
+        return
+}
+
+func store_set(op common.Request) (resp common.Response) {
+ 	ropts := levigo.NewReadOptions()
+        ropts.SetVerifyChecksums(true)
+
+        data, err := ldb.Get(ropts, op.Key)
+        if err != nil {
+                log.Printf("worker %d failed to read key: %s", op.WID,
+                        err.Error())
+                return
+        }
+        
+        wopts := levigo.NewWriteOptions()
+	woptions.SetSync(true)
+
         return
 }
