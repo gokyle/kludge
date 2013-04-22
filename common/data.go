@@ -7,10 +7,10 @@ const (
 	OpLst
 )
 
-var opNames map[int]string
+var opNames map[byte]string
 
 func init() {
-	opNames = make(map[int]string, 0)
+	opNames = make(map[byte]string, 0)
 	opNames[OpGet] = "GET"
 	opNames[OpSet] = "SET"
 	opNames[OpDel] = "DEL"
@@ -21,7 +21,7 @@ type Operation struct {
 	OpCode byte
 	Key    []byte
 	Val    []byte
-        WID    int      // ID of the handling worker
+	WID    int // ID of the handling worker
 }
 
 func (op *Operation) Name() string {
@@ -30,7 +30,7 @@ func (op *Operation) Name() string {
 
 type Request struct {
 	Op   *Operation
-	Resp chan Response
+	Resp chan *Response
 }
 
 func (req *Request) OpName() string {

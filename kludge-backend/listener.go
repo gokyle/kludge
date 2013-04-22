@@ -32,7 +32,7 @@ func listener() {
 func receiver(conn *net.TCPConn) {
 	req := new(common.Request)
 	dec := gob.NewDecoder(conn)
-	respc := make(chan common.Response)
+	respc := make(chan *common.Response)
 
 	var op = new(common.Operation)
 	dec.Decode(op)
