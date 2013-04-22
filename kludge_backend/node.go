@@ -62,7 +62,7 @@ func init() {
 		}
 	}
 	dbOpts = levigo.NewOptions()
-	dbOpts.SetCache(levigo.NewLRUCache(3 << 30))
+	dbOpts.SetCache(levigo.NewLRUCache(3 << 20))
 	dbOpts.SetCreateIfMissing(true)
 }
 

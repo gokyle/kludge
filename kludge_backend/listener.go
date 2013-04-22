@@ -25,11 +25,11 @@ func listener() {
 			log.Println("listener failure: ", err.Error())
 			continue
 		}
-		log.Print("connection: ", conn)
+		go receiver(conn)
 	}
 }
 
-func receiver(conn *net.TCPConn) {
+func receiver(conn net.Conn) {
 	req := new(common.Request)
 	dec := gob.NewDecoder(conn)
 	respc := make(chan *common.Response)
