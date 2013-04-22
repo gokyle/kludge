@@ -1,5 +1,6 @@
 package main
 
+import "encoding/json"
 import "github.com/jmhodges/levigo"
 import "github.com/gokyle/kludge/common"
 import "log"
@@ -29,8 +30,8 @@ func requestHandler(id int) {
 			req.Resp <- store_get(req.Op)
 		case common.OpSet:
 			req.Resp <- store_set(req.Op)
-                case common.OpDel:
-                        req.Resp <- store_del(req.Op)
+		case common.OpDel:
+			req.Resp <- store_del(req.Op)
 		default:
 			log.Printf("worker %d received invalid operation %d",
 				id, req.Op.OpCode)
@@ -81,7 +82,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 }
 
 func store_del(op *common.Operation) (resp *common.Response) {
- 	ropts := levigo.NewReadOptions()
+	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
 
 	data, err := ldb.Get(ropts, op.Key)
@@ -91,16 +92,40 @@ func store_del(op *common.Operation) (resp *common.Response) {
 		return
 	}
 
- 	wopts := levigo.NewWriteOptions()
+	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(true)
-        err = ldb.Delete(wopts, op.Key)
-        if err != nil {
+	err = ldb.Delete(wopts, op.Key)
+	if err != nil {
 		log.Printf("worker %d failed to delete key: %s", op.WID,
 			err.Error())
 		return
 	} else {
-                if len(data) > 0 {
-                        resp.Body = []byte("ok")
+		if len(data) > 0 {
+			resp.Body = []byte("ok")
+		}
+	}
+	return
+}
+
+func store_lst(op *common.Operation) (resp *common.Response) {
+        keys := make([]string, 0)
+        ro := levigo.NewReadOptions()
+        ro.SetFillCache(false)
+        it := ldb.NewIterator(ro)
+        for it = it; it.Valid(); it.Next() {
+                keys = append(keys, string(it.Key()))
+        }
+
+        if err := it.GetError(); err != nil {
+                log.Printf("worker %d failed to iterate over keys: %s",
+                        op.WID, err.Error())
+        } else {
+                resp = new(common.Response)
+                resp.Body, err = json.Marshal(keys)
+                if err != nil {
+                        log.Printf("worker %d failed to create JSON response: %s",
+                                op.WID, err.Error())
+                        resp.Body = []byte{}
                 }
         }
         return
