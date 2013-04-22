@@ -108,25 +108,25 @@ func store_del(op *common.Operation) (resp *common.Response) {
 }
 
 func store_lst(op *common.Operation) (resp *common.Response) {
-        keys := make([]string, 0)
-        ro := levigo.NewReadOptions()
-        ro.SetFillCache(false)
-        it := ldb.NewIterator(ro)
-        for it = it; it.Valid(); it.Next() {
-                keys = append(keys, string(it.Key()))
-        }
+	keys := make([]string, 0)
+	ro := levigo.NewReadOptions()
+	ro.SetFillCache(false)
+	it := ldb.NewIterator(ro)
+	for it = it; it.Valid(); it.Next() {
+		keys = append(keys, string(it.Key()))
+	}
 
-        if err := it.GetError(); err != nil {
-                log.Printf("worker %d failed to iterate over keys: %s",
-                        op.WID, err.Error())
-        } else {
-                resp = new(common.Response)
-                resp.Body, err = json.Marshal(keys)
-                if err != nil {
-                        log.Printf("worker %d failed to create JSON response: %s",
-                                op.WID, err.Error())
-                        resp.Body = []byte{}
-                }
-        }
-        return
+	if err := it.GetError(); err != nil {
+		log.Printf("worker %d failed to iterate over keys: %s",
+			op.WID, err.Error())
+	} else {
+		resp = new(common.Response)
+		resp.Body, err = json.Marshal(keys)
+		if err != nil {
+			log.Printf("worker %d failed to create JSON response: %s",
+				op.WID, err.Error())
+			resp.Body = []byte{}
+		}
+	}
+	return
 }
