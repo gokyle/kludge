@@ -40,32 +40,32 @@ func sendRequest(req *common.Operation) (data []byte, err error) {
 }
 
 func getKey(key string) ([]byte, error) {
-        op := &common.Operation{
-                OpCode: common.OpGet,
-                Key: []byte(key),
-            }
-        return sendRequest(op)
+	op := &common.Operation{
+		OpCode: common.OpGet,
+		Key:    []byte(key),
+	}
+	return sendRequest(op)
 }
 
 func setKey(key string, value []byte) ([]byte, error) {
-        op := &common.Operation{
-                OpCode: common.OpSet,
-                Key: []byte(key),
-                Val: value,
-        }
-        return sendRequest(op)
+	op := &common.Operation{
+		OpCode: common.OpSet,
+		Key:    []byte(key),
+		Val:    value,
+	}
+	return sendRequest(op)
 }
 
 func delKey(key string) ([]byte, error) {
-        op := &common.Operation{
-                OpCode: common.OpDel,
-                Key: []byte(key),
-            }
-        return sendRequest(op)
+	op := &common.Operation{
+		OpCode: common.OpDel,
+		Key:    []byte(key),
+	}
+	return sendRequest(op)
 }
 
 func listKeys() ([]byte, error) {
-        return sendRequest(&common.Operation{
-                OpCode: common.OpLst,
-        })
+	return sendRequest(&common.Operation{
+		OpCode: common.OpLst,
+	})
 }
