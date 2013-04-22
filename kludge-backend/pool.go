@@ -29,6 +29,8 @@ func requestHandler(id int) {
 			req.Resp <- store_get(req.Op)
 		case common.OpSet:
 			req.Resp <- store_set(req.Op)
+                case common.OpDel:
+                        req.Resp <- store_del(req.Op)
 		default:
 			log.Printf("worker %d received invalid operation %d",
 				id, req.Op.OpCode)
@@ -76,4 +78,30 @@ func store_set(op *common.Operation) (resp *common.Response) {
 		resp.Body = data
 	}
 	return
+}
+
+func store_del(op *common.Operation) (resp *common.Response) {
+ 	ropts := levigo.NewReadOptions()
+	ropts.SetVerifyChecksums(true)
+
+	data, err := ldb.Get(ropts, op.Key)
+	if err != nil {
+		log.Printf("worker %d failed to read key: %s", op.WID,
+			err.Error())
+		return
+	}
+
+ 	wopts := levigo.NewWriteOptions()
+	wopts.SetSync(true)
+        err = ldb.Delete(wopts, op.Key)
+        if err != nil {
+		log.Printf("worker %d failed to delete key: %s", op.WID,
+			err.Error())
+		return
+	} else {
+                if len(data) > 0 {
+                        resp.Body = []byte("ok")
+                }
+        }
+        return
 }
