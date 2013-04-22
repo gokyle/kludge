@@ -1,13 +1,14 @@
 package main
 
 import (
+	"github.com/gokyle/kludge/common"
 	"io"
 	"log"
 	"net/http"
 	"regexp"
 )
 
-var keyIDRegexp = regexp.MustCompile("^/key/(.+)$")
+var keyIDRegexp = regexp.MustCompile("^/data/(.+)$")
 
 func ServerError(w http.ResponseWriter, err error) {
 	w.WriteHeader(http.StatusInternalServerError)
@@ -18,6 +19,11 @@ func NotImplemented(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotImplemented)
 	msg := "Method " + r.Method + " not implemented."
 	w.Write([]byte(msg))
+}
+
+func VersionHeader(w http.ResponseWriter) {
+	version := common.Version()
+	w.Header().Add("X-Kludge-Version", version)
 }
 
 func KeyID(r *http.Request) string {
@@ -34,6 +40,10 @@ func ListKeys(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetKey(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path == "/data" || r.URL.Path == "/data/" {
+		ListKeys(w, r)
+		return
+	}
 	key := KeyID(r)
 	body, ok, err := getKey(key)
 	if err != nil {
@@ -88,20 +98,23 @@ func SetKey(w http.ResponseWriter, r *http.Request) {
 
 func Key(w http.ResponseWriter, r *http.Request) {
 	log.Printf("%s request to %s", r.Method, r.URL.String())
-	if r.URL.Path == "/data" || r.URL.Path == "/data/" {
-		ListKeys(w, r)
-	} else {
-		switch r.Method {
-		case "GET":
-			GetKey(w, r)
-		case "POST", "PUT":
-			SetKey(w, r)
-		case "DELETE":
-			DelKey(w, r)
-		default:
-			NotImplemented(w, r)
+	VersionHeader(w)
+	switch r.Method {
+	case "GET":
+		GetKey(w, r)
+	case "POST", "PUT":
+		SetKey(w, r)
+	case "DELETE":
+		DelKey(w, r)
+	case "HEAD":
+		w.Header().Add("content-length", "0")
+		w.WriteHeader(http.StatusOK)
+		return
+	default:
+		log.Print("received unsupported request for method ",
+			r.Method)
+		NotImplemented(w, r)
 
-		}
 	}
 }
 
