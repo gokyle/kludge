@@ -32,9 +32,14 @@ func requestHandler(id int) {
 			req.Resp <- store_set(req.Op)
 		case common.OpDel:
 			req.Resp <- store_del(req.Op)
+		case common.OpLst:
+			req.Resp <- store_lst(req.Op)
 		default:
 			log.Printf("worker %d received invalid operation %d",
 				id, req.Op.OpCode)
+			resp := new(common.Response)
+			resp.Body = []byte("invalid request")
+			req.Resp <- resp
 		}
 	}
 }
@@ -101,6 +106,7 @@ func store_del(op *common.Operation) (resp *common.Response) {
 		return
 	} else {
 		if len(data) > 0 {
+			resp = new(common.Response)
 			resp.Body = []byte("ok")
 		}
 	}
@@ -112,7 +118,7 @@ func store_lst(op *common.Operation) (resp *common.Response) {
 	ro := levigo.NewReadOptions()
 	ro.SetFillCache(false)
 	it := ldb.NewIterator(ro)
-	for it = it; it.Valid(); it.Next() {
+	for it.SeekToFirst(); it.Valid(); it.Next() {
 		keys = append(keys, string(it.Key()))
 	}
 
