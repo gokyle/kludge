@@ -1,12 +1,14 @@
 # KLUDGE
 ## A restful key-value store based on LevelDB
 
+```
 .
 |-- common
 |-- kludge-backend: the key-value store backend; this is the actual LevelDB
 |                   interface.
 |-- kludge-client: package simplifying access to a kludge server.
-|-- kludge-server: the kludge server front-end that clients communicate with.
+\-- kludge-server: the kludge server front-end that clients communicate with.
+```
 
 ## Status
 
