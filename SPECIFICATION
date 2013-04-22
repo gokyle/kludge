@@ -151,10 +151,19 @@
   the previous value of the key'; otherwise, it will return an HTTP 404
   "Not Found" response.
 
+3.2. Version Endpoint
+
+  A client application can make a HEAD request to any endpoint, and
+  check the X-Kludge-Version header to retrieve the current version of
+  the server. This header must contain a value of the form "kludge-X.Y.Z",
+  where X is the major version, Y is the minor version, and Z is the patch
+  version. The Kludge version follows the semantic versioning[4] scheme.
+
 
 A. REFERENCES
 
   [1] http://code.google.com/p/leveldb/
   [2] http://saltstack.com/community.html
   [3] http://munin-monitoring.org/
+  [4] http://semver.org
 
