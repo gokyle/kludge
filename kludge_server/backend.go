@@ -31,7 +31,7 @@ func sendRequest(req *common.Operation) (data []byte, err error) {
 		return
 	}
 	if err = dec.Decode(resp); err != nil {
-		log.Printf("failed to decode response: ", err.Error())
+		log.Print("failed to decode response: ", err.Error())
 		return
 	}
 	data = resp.Body
