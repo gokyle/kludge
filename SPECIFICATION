@@ -1,0 +1,185 @@
+                                                                 K. Isom
+                                                           21 April 2013
+                                                            Version 0.1a
+
+
+
+                     Kludge System Specification
+
+
+                            0. STATUS
+
+  The specification for the system is still being developed and subject
+  to change.
+
+
+                          1. INTRODUCTION
+
+1.1. Overview
+
+  Kludge is a file-backed key-value store implemented using the LevelDB[1]
+  library from Google, Inc. Clients interact with the store using a
+  REST-like HTTP interface. The server consists of two components;
+  the HTTP interface that clients use for communication, and the store
+  backend. The HTTP interface communicates with the backend over TCP,
+  by default on port 5987. The data store treats all keys and values
+  as byte sequences; from the client perspective, this means keys and
+  values should be handled as strings outside the client's deocding.
+
+1.2. Motivation and Simplifying Assumptions
+
+  Kludge is being developed as a means to learn distributed computing
+  algorithms, particularly distributed consensus algorithms. To this end,
+  many simplifying assumptions are made to drive development towards
+  this primary objective. These simplifying assumptions consist of:
+
+  1. Kludge implements no security elements; this includes TLS or any
+     authentication method.
+  2. There is no namespacing. All clients operate in the same namespace.
+
+  Once sufficient progress has been made, these simplifications may be
+  addressed if they are deemed important to the educational task.
+
+
+                         2. DEVELOPMENT
+
+2.1. Development Roadmap
+
+  Development of Kludge will progress in several steps, aimed at
+  progressing the system towards certain milestones. This section will
+  continue to be developed as the problem is better understood.  For this
+  section, the term 'node' is used to refer to a server running an
+  instance of the backend, will all required supporting system software.
+
+2.1.1. Milestone 1: Single Node System
+
+  The first milestone is the development of a single node system. This
+  solves the initial problem of building a basic, functioning data store
+  that can be made distributed in the next step. This milestone is
+  specifically concerned with solving the problems of
+
+  1. Developing a consistent, well-architected REST API for clients
+     to interact with. This task will facilitate testing the system
+     at all milestones. Once designed, this interface should not need
+     modification, as further milestones will be concerned with the
+     development of the backend. Client programs should not be
+     concerned with architectural changes on the backend; this is the
+     purview of the system maintainers.
+
+  2. Developing a link between the backend and the HTTP interface,
+     allowing a consistent and clear means for the API frontend to
+     communicate with backend nodes. The first milestone will concern
+     itself only with a single backend node to facilitate development
+     of basic functionality. Once developed, future milestones can
+     expand and adapt this link to communicate with multiple backend
+     nodes.
+
+  3. Developing a workflow for automating deployment of the server. This
+     will be critical for testing updates to the system and ensuring
+     that all server nodes are running the latest software. At this time,
+     the proposed infrastructure management system is Salt[2]. The
+     backend nodes are expected to run on Upstart-enabled systems, allowing
+     the use of Upstart scripts to control the server as a daemon.
+     Centralised log management will also be a consideration at this point
+     to expedite debugging and monitoring of backend nodes. Munin[3]
+     is expected to be used to monitor the health of backend nodes as
+     well. Solving this issue will provide the instrumentation and metrics
+     needed to assess the performance of later milestones.
+
+2.1.2. Milestone 2: Multiple Node System
+
+  During this milestone, multiple nodes will be added. This milestone
+  will be complete once the system as a whole (frontend + nodes)
+  is operating consistently and performantly.
+
+  Issues that this milestone concerns itself with:
+
+  1. Developing a protocol for identifying the backend nodes dynamically.
+     This allows new nodes to be spun up as required, and requires
+     determining how to best replicate information across all nodes.
+
+ 
+                        3. THE FRONTEND INTERFACE
+
+3.1. Frontend Overview
+
+  The frontend as seen by client programs will be a single HTTP
+  server implementing a REST-like interface. From the perspective
+  of the backend, multiple HTTP servers may be placed behind a load
+  balancer as required. The server's root page will contain a
+  form for manually getting or setting values for the purposes of
+  testing and demonstration.
+
+3.2. Single Key Requests
+
+  A client requests utilising only one key must use the '/key'
+  endpoint. This endpoint allows listing of keys, retrieving key values,
+  setting or changing key values, and deleting keys.
+
+3.2.1. Listing Keys
+
+  An HTTP GET request to the '/key' endpoint will return a list
+  of the keys present in the system.
+
+3.1.2. Retrieving Key Values
+
+  An HTTP GET request to the '/key/:id' endpoint will return the
+  value of the key as an 'application/octet-stream' to be decoded
+  by the client application. The value of ':id' should be the key
+  whose value is desired.
+
+3.1.3 Setting and Changing Key Values
+
+  An HTTP PUT request to the '/key/:id' endpoint (in which ':id' is the
+  desired key) will result in the setting of the specified key to the
+  value contained in the request body. If the key is already present
+  in the system, its current value is overwritten and the previous
+  value will be returned in the response. If the value is not present,
+  an empty response will be returned.
+
+  An HTTP POST request to the same endpoint will behave in exactly the
+  same manner.
+
+  In either case, the request body should contain only the value of the
+  key to be set.
+
+3.1.4. Removing Keys
+
+  An HTTP DELETE request to the '/key/:id' endpoint will cause the
+  key to be removed. If successful, the server will respond with
+  'ok'; otherwise, it will return an empty response.
+
+3.3 Batch Requests
+
+  A client that wishes to retrieve or set multiple keys shall
+  send a JSON request to the '/batch' endpoint.
+
+3.3.1. Retrieving Multiple Keys
+
+  A client may retrieve multiple keys by sending a JSON array of
+  keys to the '/batch' endpoint. The server will respond with a
+  JSON object that may be thought of as a map of string key values
+  to string values. For example, given the following key values in
+  the datastore:
+
+    'foo' => 'bar'
+    'baz' => 'quux'
+
+  The client request containing the JSON ["foo", "spam"], the
+  server will respond with {"foo":"bar"}. Note that keys without
+  associated values are not returned.
+
+3.3.2 Setting Multiple Keys
+
+  A client may set multiple keys by sending a JSON object of keys
+  to the '/batch' endpoint. The server will respond with an array
+  of all the keys set. In practise, this will be an array of all
+  the keys sent to the server.
+
+
+A. REFERENCES
+
+  [1] http://code.google.com/p/leveldb/
+  [2] http://saltstack.com/community.html
+  [3] http://munin-monitoring.org/
+
