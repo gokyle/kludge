@@ -85,3 +85,21 @@ func TestDel(t *testing.T) {
 		t.FailNow()
 	}
 }
+
+func TestLst(t *testing.T) {
+	db, err := Connect(TestServer, nil)
+	if err != nil {
+		fmt.Println("[!] connect failed: ", err.Error())
+		t.FailNow()
+	}
+
+	keys, err := db.List()
+	if err != nil {
+		fmt.Println("[!] failed to retrieve key listing:", err.Error())
+		t.FailNow()
+	} else if len(keys) != 1 {
+		fmt.Printf("[!] unexpected number of keys (%d, expected 1)\n",
+			len(keys))
+		t.FailNow()
+	}
+}

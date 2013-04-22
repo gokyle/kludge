@@ -2,6 +2,7 @@ package kludge
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -90,5 +91,22 @@ func (db *DB) Del(key string) (prev []byte, ok bool, err error) {
 	}
 
 	prev, err = ioutil.ReadAll(resp.Body)
+	return
+}
+
+func (db *DB) List() (keys []string, err error) {
+	url := db.address + "/data"
+	resp, err := db.client.Get(url)
+	if err != nil {
+		return
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return
+	}
+	keys = make([]string, 0)
+	err = json.Unmarshal(body, &keys)
 	return
 }
