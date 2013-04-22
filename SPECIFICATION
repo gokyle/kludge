@@ -1,6 +1,6 @@
                                                                  K. Isom
                                                            21 April 2013
-                                                            Version 0.1a
+                                                            Version 0.1b
 
 
 
@@ -21,10 +21,10 @@
   library from Google, Inc. Clients interact with the store using a
   REST-like HTTP interface. The server consists of two components;
   the HTTP interface that clients use for communication, and the store
-  backend. The HTTP interface communicates with the backend over TCP,
-  by default on port 5987. The data store treats all keys and values
-  as byte sequences; from the client perspective, this means keys and
-  values should be handled as strings outside the client's deocding.
+  backend. The HTTP interface communicates with the backend over TCP, by
+  default on port 5987. The data store treats all keys and values as byte
+  sequences; clients are expected to use Unicode strings for key values. This
+  is a JSON constraint.
 
 1.2. Motivation and Simplifying Assumptions
 
@@ -112,25 +112,26 @@
 
 3.2. Single Key Requests
 
-  A client requests utilising only one key must use the '/key'
+  A client requests utilising only one key must use the 'data'
   endpoint. This endpoint allows listing of keys, retrieving key values,
   setting or changing key values, and deleting keys.
 
 3.2.1. Listing Keys
 
-  An HTTP GET request to the '/key' endpoint will return a JSON list of
+  An HTTP GET request to the 'data' endpoint will return a JSON list of
   the keys present in the system.
 
 3.1.2. Retrieving Key Values
 
-  An HTTP GET request to the '/key/:id' endpoint will return the value
+  An HTTP GET request to the 'data/:id' endpoint will return the value
   of the key as an 'application/octet-stream' to be decoded by the
   client application. The value of ':id' should be the key whose value
-  is desired.
+  is desired. If the key isn't in the database, an HTTP 404 "Not Found"
+  response is returned.
 
 3.1.3 Setting and Changing Key Values
 
-  An HTTP PUT request to the '/key/:id' endpoint (in which ':id' is the
+  An HTTP PUT request to the 'data/:id' endpoint (in which ':id' is the
   desired key) will result in the setting of the specified key to the
   value contained in the request body. If the key is already present
   in the system, its current value is overwritten and the previous
@@ -145,36 +146,10 @@
 
 3.1.4. Removing Keys
 
-  An HTTP DELETE request to the '/key/:id' endpoint will cause the
+  An HTTP DELETE request to the 'data/:id' endpoint will cause the
   key to be removed. If successful, the server will respond with
-  'ok'; otherwise, it will return an empty response.
-
-3.3 Batch Requests
-
-  A client that wishes to retrieve or set multiple keys shall
-  send a JSON request to the '/batch' endpoint.
-
-3.3.1. Retrieving Multiple Keys
-
-  A client may retrieve multiple keys by sending a JSON array of
-  keys to the '/batch' endpoint. The server will respond with a
-  JSON object that may be thought of as a map of string key values
-  to string values. For example, given the following key values in
-  the datastore:
-
-    'foo' => 'bar'
-    'baz' => 'quux'
-
-  The client request containing the JSON ["foo", "spam"], the
-  server will respond with {"foo":"bar"}. Note that keys without
-  associated values are not returned.
-
-3.3.2 Setting Multiple Keys
-
-  A client may set multiple keys by sending a JSON object of keys
-  to the '/batch' endpoint. The server will respond with an array
-  of all the keys set. In practise, this will be an array of all
-  the keys sent to the server.
+  the previous value of the key'; otherwise, it will return an HTTP 404
+  "Not Found" response.
 
 
 A. REFERENCES
