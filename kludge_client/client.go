@@ -9,7 +9,8 @@ import (
 	"regexp"
 )
 
-type DB struct {
+// Type DB provides for keystore interaction.
+type DataStore struct {
 	address string
 	client  *http.Client
 }
@@ -17,14 +18,14 @@ type DB struct {
 var versionRegexp = regexp.MustCompile("^kludge-\\d+\\.\\d|\\.\\d+$")
 var ErrInvalidDatastore = fmt.Errorf("invalid datastore")
 
-func Connect(addr string, client *http.Client) (db *DB, err error) {
-	db = new(DB)
+func Connect(addr string, client *http.Client) (ds *DataStore, err error) {
+	ds = new(DataStore)
 	if client == nil {
-		db.client = http.DefaultClient
+		ds.client = http.DefaultClient
 	}
-	db.address = "http://" + addr
+	ds.address = "http://" + addr
 
-	if ver := db.Version(); ver == "" {
+	if ver := ds.Version(); ver == "" {
 		err = ErrInvalidDatastore
 	} else if !versionRegexp.MatchString(ver) {
 		err = ErrInvalidDatastore
@@ -32,8 +33,8 @@ func Connect(addr string, client *http.Client) (db *DB, err error) {
 	return
 }
 
-func (db *DB) Version() string {
-	resp, err := db.client.Head(db.address + "/data")
+func (ds *DataStore) Version() string {
+	resp, err := ds.client.Head(ds.address + "/data")
 	if err != nil {
 		return ""
 	}
@@ -41,9 +42,9 @@ func (db *DB) Version() string {
 	return resp.Header["X-Kludge-Version"][0]
 }
 
-func (db *DB) Get(key string) (value []byte, ok bool, err error) {
-	url := db.address + "/data/" + key
-	resp, err := db.client.Get(url)
+func (ds *DataStore) Get(key string) (value []byte, ok bool, err error) {
+	url := ds.address + "/data/" + key
+	resp, err := ds.client.Get(url)
 	if err != nil {
 		return
 	}
@@ -57,10 +58,10 @@ func (db *DB) Get(key string) (value []byte, ok bool, err error) {
 	return
 }
 
-func (db *DB) Set(key string, value []byte) (prev []byte, ok bool, err error) {
-	url := db.address + "/data/" + key
+func (ds *DataStore) Set(key string, value []byte) (prev []byte, ok bool, err error) {
+	url := ds.address + "/data/" + key
 	buf := bytes.NewBuffer(value)
-	resp, err := db.client.Post(url, "application/json", buf)
+	resp, err := ds.client.Post(url, "application/json", buf)
 	if err != nil {
 		return
 	}
@@ -74,13 +75,13 @@ func (db *DB) Set(key string, value []byte) (prev []byte, ok bool, err error) {
 	return
 }
 
-func (db *DB) Del(key string) (prev []byte, ok bool, err error) {
-	url := db.address + "/data/" + key
+func (ds *DataStore) Del(key string) (prev []byte, ok bool, err error) {
+	url := ds.address + "/data/" + key
 	req, err := http.NewRequest("DELETE", url, nil)
 	if err != nil {
 		return
 	}
-	resp, err := db.client.Do(req)
+	resp, err := ds.client.Do(req)
 	if err != nil {
 		return
 	}
@@ -94,9 +95,9 @@ func (db *DB) Del(key string) (prev []byte, ok bool, err error) {
 	return
 }
 
-func (db *DB) List() (keys []string, err error) {
-	url := db.address + "/data"
-	resp, err := db.client.Get(url)
+func (ds *DataStore) List() (keys []string, err error) {
+	url := ds.address + "/data"
+	resp, err := ds.client.Get(url)
 	if err != nil {
 		return
 	}

@@ -9,13 +9,13 @@ import (
 var TestServer = "127.0.0.1:8080"
 
 func init() {
-	db, err := Connect(TestServer, nil)
+	ds, err := Connect(TestServer, nil)
 	if err != nil {
 		fmt.Println("[!] database couldn't be reached")
 		os.Exit(1)
 	}
-	db.Set("foo", []byte("bar"))
-	db.Del("baz")
+	ds.Set("foo", []byte("bar"))
+	ds.Del("baz")
 }
 
 func TestConnect(t *testing.T) {
@@ -27,13 +27,13 @@ func TestConnect(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
-	db, err := Connect(TestServer, nil)
+	ds, err := Connect(TestServer, nil)
 	if err != nil {
 		fmt.Println("[!] connect failed: ", err.Error())
 		t.FailNow()
 	}
 
-	value, ok, err := db.Get("foo")
+	value, ok, err := ds.Get("foo")
 	if err != nil {
 		fmt.Println("GET failed: ", err.Error())
 		t.FailNow()
@@ -47,13 +47,13 @@ func TestGet(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
-	db, err := Connect(TestServer, nil)
+	ds, err := Connect(TestServer, nil)
 	if err != nil {
 		fmt.Println("[!] connect failed: ", err.Error())
 		t.FailNow()
 	}
 
-	value, ok, err := db.Set("bar", []byte("baz"))
+	value, ok, err := ds.Set("bar", []byte("baz"))
 	if err != nil {
 		fmt.Println("SET failed: ", err.Error())
 		t.FailNow()
@@ -67,13 +67,13 @@ func TestSet(t *testing.T) {
 }
 
 func TestDel(t *testing.T) {
-	db, err := Connect(TestServer, nil)
+	ds, err := Connect(TestServer, nil)
 	if err != nil {
 		fmt.Println("[!] connect failed: ", err.Error())
 		t.FailNow()
 	}
 
-	value, ok, err := db.Del("bar")
+	value, ok, err := ds.Del("bar")
 	if err != nil {
 		fmt.Println("DEL failed: ", err.Error())
 		t.FailNow()
@@ -87,13 +87,13 @@ func TestDel(t *testing.T) {
 }
 
 func TestLst(t *testing.T) {
-	db, err := Connect(TestServer, nil)
+	ds, err := Connect(TestServer, nil)
 	if err != nil {
 		fmt.Println("[!] connect failed: ", err.Error())
 		t.FailNow()
 	}
 
-	keys, err := db.List()
+	keys, err := ds.List()
 	if err != nil {
 		fmt.Println("[!] failed to retrieve key listing:", err.Error())
 		t.FailNow()
