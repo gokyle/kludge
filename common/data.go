@@ -38,5 +38,7 @@ func (req *Request) OpName() string {
 }
 
 type Response struct {
-	Body []byte
+	KeyOK  bool
+	Body   []byte
+	ErrMsg string
 }
