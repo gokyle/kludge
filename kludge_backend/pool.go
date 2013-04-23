@@ -47,6 +47,7 @@ func requestHandler(id int) {
 func store_get(op *common.Operation) (resp *common.Response) {
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
+	defer ropts.Close()
 	resp = new(common.Response)
 
 	data, err := ldb.Get(ropts, op.Key)
@@ -56,9 +57,7 @@ func store_get(op *common.Operation) (resp *common.Response) {
 		resp.ErrMsg = err.Error()
 	} else {
 		log.Printf("worker %d successfully completes GET", op.WID)
-		if data != nil {
-			resp.KeyOK = true
-		}
+		resp.KeyOK = data != nil
 		resp.Body = data
 	}
 	return
@@ -68,6 +67,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 	resp = new(common.Response)
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
+	defer ropts.Close()
 
 	data, err := ldb.Get(ropts, op.Key)
 	if err != nil {
@@ -79,6 +79,8 @@ func store_set(op *common.Operation) (resp *common.Response) {
 
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(true)
+	defer wopts.Close()
+
 	err = ldb.Put(wopts, op.Key, op.Val)
 	if err != nil {
 		log.Printf("worker %d failed to set key: %s", op.WID,
@@ -87,7 +89,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 		return
 	} else {
 		log.Printf("worker %d successfully wrote key", op.WID)
-		resp.KeyOK = data == nil
+		resp.KeyOK = data != nil
 		resp.Body = data
 	}
 	return
@@ -96,6 +98,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 func store_del(op *common.Operation) (resp *common.Response) {
 	ropts := levigo.NewReadOptions()
 	ropts.SetVerifyChecksums(true)
+	defer ropts.Close()
 
 	resp = new(common.Response)
 	data, err := ldb.Get(ropts, op.Key)
@@ -108,6 +111,8 @@ func store_del(op *common.Operation) (resp *common.Response) {
 
 	wopts := levigo.NewWriteOptions()
 	wopts.SetSync(true)
+	defer wopts.Close()
+
 	err = ldb.Delete(wopts, op.Key)
 	if err != nil {
 		log.Printf("worker %d failed to delete key: %s", op.WID,
@@ -115,7 +120,7 @@ func store_del(op *common.Operation) (resp *common.Response) {
 		resp.ErrMsg = err.Error()
 		return
 	} else {
-		resp.KeyOK = data == nil
+		resp.KeyOK = data != nil
 		resp.Body = data
 	}
 	return
@@ -124,9 +129,11 @@ func store_del(op *common.Operation) (resp *common.Response) {
 func store_lst(op *common.Operation) (resp *common.Response) {
 	resp = new(common.Response)
 	keys := make([]string, 0)
-	ro := levigo.NewReadOptions()
-	ro.SetFillCache(true)
-	it := ldb.NewIterator(ro)
+	ropts := levigo.NewReadOptions()
+	ropts.SetFillCache(true)
+	defer ropts.Close()
+
+	it := ldb.NewIterator(ropts)
 	for it.SeekToFirst(); it.Valid(); it.Next() {
 		keys = append(keys, string(it.Key()))
 	}
