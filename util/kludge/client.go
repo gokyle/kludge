@@ -124,7 +124,7 @@ func del(addr, key string, toString bool) {
 		} else {
 			fmt.Printf("%v\n", prev)
 		}
-	        fmt.Println("\tkey deleted successfully.")
+		fmt.Println("\tkey deleted successfully.")
 	} else {
 		fmt.Printf("\tkey not in datastore\n")
 	}
@@ -136,11 +136,11 @@ func lst(addr string) {
 		fmt.Println("[!] error connecting to datastore:", err.Error())
 		os.Exit(1)
 	}
-        keys, err := ds.List()
-        if err != nil {
-                fmt.Printf("[!] failed to get keys:", err.Error())
-                os.Exit(1)
-        }
-        keyList := strings.Join(keys, ", ")
-        fmt.Printf("keys in datastore: %s\n", keyList)
+	keys, err := ds.List()
+	if err != nil {
+		fmt.Printf("[!] failed to get keys:", err.Error())
+		os.Exit(1)
+	}
+	keyList := strings.Join(keys, ", ")
+	fmt.Printf("keys in datastore: %s\n", keyList)
 }
