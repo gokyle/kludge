@@ -48,6 +48,6 @@ func receiver(conn net.Conn) {
 
 	enc := gob.NewEncoder(conn)
 	enc.Encode(resp)
-	rtime := (time.Now().UnixNano() - start) / 1000
-	log.Printf("response time: %dms", rtime)
+	rtime := (time.Now().UnixNano() - start) / 1000.0
+	log.Printf("response time: %dus", rtime)
 }
