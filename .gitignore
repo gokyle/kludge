@@ -1,4 +1,9 @@
+# binaries
+logsrv/logsrv
 kludge_backend/kludge_backend
 kludge_backend/data
 kludge_server/kludge_server
+util/kludge/kludge
 *.log
+*.db
+
