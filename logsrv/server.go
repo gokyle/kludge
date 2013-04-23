@@ -81,6 +81,7 @@ func listen() {
 }
 
 func processMessage(conn net.Conn) {
+	fmt.Println("[+] client connected:", conn.RemoteAddr)
 	defer conn.Close()
 	r := bufio.NewReader(conn)
 
