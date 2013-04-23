@@ -1,3 +1,4 @@
 kludge_backend/kludge_backend
 kludge_backend/data
 kludge_server/kludge_server
+*.log
