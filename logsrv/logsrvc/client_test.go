@@ -1,20 +1,20 @@
 package logsrvc
 
 import (
-        "flag"
+	"flag"
 	"fmt"
 	"testing"
 )
 
 var (
-        logSrv string
-        logger *Logger
+	logSrv string
+	logger *Logger
 )
 
 func init() {
-        flAddr := flag.String("address", "127.0.0.1:5988", "address of log server")
-        flag.Parse()
-        logSrv = *flAddr
+	flAddr := flag.String("address", "127.0.0.1:5988", "address of log server")
+	flag.Parse()
+	logSrv = *flAddr
 }
 
 func TestConnect(t *testing.T) {
