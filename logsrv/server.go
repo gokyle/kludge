@@ -81,7 +81,7 @@ func listen() {
 }
 
 func processMessage(conn net.Conn) {
-	fmt.Println("[+] client connected:", conn.RemoteAddr)
+	fmt.Println("[+] client connected:", conn.RemoteAddr())
 	defer conn.Close()
 	r := bufio.NewReader(conn)
 
@@ -133,24 +133,23 @@ func log() {
 		}
 
 		if responseCheck.MatchString(le.Msg) {
-			logResponseTime(db, le)
+			respString := responseCheck.ReplaceAllString(le.Msg, "$1")
+			rTime, err := strconv.Atoi(respString)
+			if err != nil {
+				fmt.Println("[!] error reading response time:", err.Error())
+				return
+			}
+			_, err = db.Exec("insert into response_times values (?, ?, ?)",
+				le.Node, le.Time, rTime)
+			if err != nil {
+				fmt.Println("[!] error writing to database:", err.Error())
+			}
 		}
 
 	}
 }
 
 func logResponseTime(db *sql.DB, le *logEntry) {
-	respString := responseCheck.ReplaceAllString(le.Msg, "$1")
-	rTime, err := strconv.Atoi(respString)
-	if err != nil {
-		fmt.Println("[!] error reading response time:", err.Error())
-		return
-	}
-	_, err = db.Exec("insert into response_times values (?, ?, ?)",
-		le.Node, le.Time, rTime)
-	if err != nil {
-		fmt.Println("[!] error writing to database:", err.Error())
-	}
 }
 
 func dbSetup() {
