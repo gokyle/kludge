@@ -12,7 +12,7 @@ var (
 )
 
 func init() {
-        flAddr := flag.String("a", "127.0.0.1:5988", "address of log server")
+        flAddr := flag.String("address", "127.0.0.1:5988", "address of log server")
         flag.Parse()
         logSrv = *flAddr
 }
