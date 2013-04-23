@@ -56,7 +56,9 @@ func store_get(op *common.Operation) (resp *common.Response) {
 		resp.ErrMsg = err.Error()
 	} else {
 		log.Printf("worker %d successfully completes GET", op.WID)
-		resp.KeyOK = true
+                if data != nil {
+		        resp.KeyOK = true
+                }
 		resp.Body = data
 	}
 	return
