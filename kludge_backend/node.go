@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"github.com/gokyle/goconfig"
+	"github.com/gokyle/uuid"
 	"github.com/jmhodges/levigo"
 	"log"
 	"os"
@@ -16,12 +17,19 @@ var (
 	dataStore  string // the filepath kludge should store data in
 	dbOpts     *levigo.Options
 	ldb        *levigo.DB
+	nodeID     string
 	listenAddr = ":5987"
 	poolSize   = 4
 	reqBuf     = 16
 )
 
 func init() {
+	nodeID, err := uuid.GenerateV4String()
+	if err != nil {
+		log.Println("couldn't get UUID")
+		os.Exit(1)
+	}
+	log.SetPrefix("node:" + nodeID + " ")
 	configFile := flag.String("f", "etc/kludge/backendrc",
 		"path to configuration file")
 	flag.Parse()
