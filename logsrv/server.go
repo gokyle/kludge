@@ -180,6 +180,7 @@ func entryTable() {
 		err = rows.Scan(&tblSql)
 		break
 	}
+	rows.Close()
 
 	if err != nil {
 		fmt.Println("[!] error reading database:", err.Error())
@@ -227,6 +228,7 @@ func respTable() {
 		err = rows.Scan(&tblSql)
 		break
 	}
+	rows.Close()
 
 	if err != nil {
 		fmt.Println("[!] error reading database:", err.Error())
