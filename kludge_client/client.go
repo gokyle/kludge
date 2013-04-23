@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-        "github.com/gokyle/kludge/common"
+	"github.com/gokyle/kludge/common"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -17,11 +17,14 @@ type DataStore struct {
 }
 
 var versionRegexp = regexp.MustCompile("^kludge-\\d+\\.\\d|\\.\\d+$")
+
+// ErrInvalidDatastore indicates a bad connection to the database; the address
+// passed in to the Connect function doesn't point to a valid kludge server.
 var ErrInvalidDatastore = fmt.Errorf("invalid datastore")
 
 // ClientVersion returns the client's version information.
 func ClientVersion() string {
-        return common.Version()
+	return common.Version()
 }
 
 // Connect initialises a new DataStore value that will connect to the
