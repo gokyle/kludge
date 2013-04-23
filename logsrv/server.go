@@ -6,7 +6,7 @@ import (
 	"flag"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-        "io"
+	"io"
 	"net"
 	"os"
 	"os/signal"
@@ -87,10 +87,10 @@ func processMessage(conn net.Conn) {
 	for {
 		msg, err := r.ReadString(0x0a)
 		if err != nil {
-                        if err != io.EOF {
-                                fmt.Println("[!] error reading from client:",
-                                        err.Error())
-                        }
+			if err != io.EOF {
+				fmt.Println("[!] error reading from client:",
+					err.Error())
+			}
 			return
 		}
 		msg = strings.Trim(string(msg), "\n \t")
@@ -121,7 +121,7 @@ func log() {
 	for {
 		le, ok := <-logChan
 		if !ok {
-                        fmt.Println("[+] shutting down database listener")
+			fmt.Println("[+] shutting down database listener")
 			return
 		}
 		_, err := db.Exec("insert into entries values (?, ?, ?)",
