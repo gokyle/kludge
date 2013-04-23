@@ -1,16 +1,19 @@
 package main
 
 import (
+	"bufio"
 	"database/sql"
 	"flag"
 	"fmt"
 	_ "github.com/mattn/go-sqlite3"
-	"io/ioutil"
+        "io"
 	"net"
 	"os"
+	"os/signal"
 	"regexp"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -44,6 +47,18 @@ func init() {
 func main() {
 	dbSetup()
 	go log()
+	go listen()
+
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Kill, os.Interrupt, syscall.SIGTERM)
+	<-sigc
+	close(logChan)
+	<-time.After(100 * time.Millisecond)
+
+	os.Exit(1)
+}
+
+func listen() {
 	tcpAddr, err := net.ResolveTCPAddr("tcp", addr)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "[!] failed to resolve TCP address:", err.Error())
@@ -54,7 +69,6 @@ func main() {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "[!] failed to set up TCP listener:", err.Error())
 	}
-
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -63,30 +77,37 @@ func main() {
 		}
 		go processMessage(conn)
 	}
-	os.Exit(1)
+
 }
 
 func processMessage(conn net.Conn) {
 	defer conn.Close()
-	bmsg, err := ioutil.ReadAll(conn)
-	if err != nil {
-		fmt.Println("[!] error reading message:", err.Error())
-		return
-	}
-	msg := strings.Trim(string(bmsg), "\n \t")
-	fmt.Println(string(msg))
+	r := bufio.NewReader(conn)
 
-	nodeID := logSplit.ReplaceAllString(msg, "$1")
-	dateString := logSplit.ReplaceAllString(msg, "$2")
-	logMsg := logSplit.ReplaceAllString(msg, "$3")
-	tm, err := time.Parse(tsFormat, dateString)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "[!] error parsing time %s: %s\n",
-			dateString, err.Error())
-		return
+	for {
+		msg, err := r.ReadString(0x0a)
+		if err != nil {
+                        if err != io.EOF {
+                                fmt.Println("[!] error reading from client:",
+                                        err.Error())
+                        }
+			return
+		}
+		msg = strings.Trim(string(msg), "\n \t")
+		fmt.Println("-- ", msg)
+
+		nodeID := logSplit.ReplaceAllString(msg, "$1")
+		dateString := logSplit.ReplaceAllString(msg, "$2")
+		logMsg := logSplit.ReplaceAllString(msg, "$3")
+		tm, err := time.Parse(tsFormat, dateString)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "[!] error parsing time %s: %s\n",
+				dateString, err.Error())
+			return
+		}
+		le := &logEntry{nodeID, tm.UTC().Unix(), logMsg}
+		logChan <- le
 	}
-	le := &logEntry{nodeID, tm.UTC().Unix(), logMsg}
-	logChan <- le
 }
 
 func log() {
@@ -100,6 +121,7 @@ func log() {
 	for {
 		le, ok := <-logChan
 		if !ok {
+                        fmt.Println("[+] shutting down database listener")
 			return
 		}
 		_, err := db.Exec("insert into entries values (?, ?, ?)",
