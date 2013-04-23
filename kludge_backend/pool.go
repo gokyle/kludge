@@ -56,9 +56,9 @@ func store_get(op *common.Operation) (resp *common.Response) {
 		resp.ErrMsg = err.Error()
 	} else {
 		log.Printf("worker %d successfully completes GET", op.WID)
-                if data != nil {
-		        resp.KeyOK = true
-                }
+		if data != nil {
+			resp.KeyOK = true
+		}
 		resp.Body = data
 	}
 	return
@@ -87,7 +87,7 @@ func store_set(op *common.Operation) (resp *common.Response) {
 		return
 	} else {
 		log.Printf("worker %d successfully wrote key", op.WID)
-		resp.KeyOK = len(data) > 0
+		resp.KeyOK = data == nil
 		resp.Body = data
 	}
 	return
@@ -115,7 +115,7 @@ func store_del(op *common.Operation) (resp *common.Response) {
 		resp.ErrMsg = err.Error()
 		return
 	} else {
-		resp.KeyOK = len(data) > 0
+		resp.KeyOK = data == nil
 		resp.Body = data
 	}
 	return
