@@ -93,6 +93,8 @@ func processMessage(conn net.Conn) {
 					err.Error())
 			}
 			return
+		} else if msg == "" {
+			return
 		}
 		msg = strings.Trim(string(msg), "\n \t")
 		fmt.Println("-- ", msg)
