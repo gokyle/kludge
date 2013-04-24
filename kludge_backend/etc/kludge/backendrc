@@ -1,2 +1,6 @@
+[ datastore ]
 datastore = data
 pool_size = 16
+
+[ logging ]
+loghost = verne.local:5988
