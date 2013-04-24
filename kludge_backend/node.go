@@ -105,7 +105,7 @@ func updateConfig(cfg goconfig.ConfigMap, cfgFile string) {
 }
 
 func init() {
-	configFile := flag.String("f", "etc/kludge/backendrc",
+	configFile := flag.String("f", "backendrc",
 		"path to configuration file")
 	flag.Parse()
 
