@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
-        "os"
+	"os"
 )
 
 // Logger is value capable of sending logs to the log server.
@@ -42,17 +42,23 @@ func Connect(node, addr string) (logger *Logger, err error) {
 
 func (logger *Logger) Print(args ...interface{}) {
 	fmt.Println(args...)
-	log.Print(args...)
+	if logger.conn != nil {
+		log.Print(args...)
+	}
 }
 
 func (logger *Logger) Printf(format string, args ...interface{}) {
-	log.Printf(format, args...)
+	if logger.conn != nil {
+		log.Printf(format, args...)
+	}
 	fmt.Printf(format+"\n", args...)
 }
 
 func (logger *Logger) Println(args ...interface{}) {
 	fmt.Println(args...)
-	log.Println(args...)
+	if logger.conn != nil {
+		log.Println(args...)
+	}
 }
 
 func (logger *Logger) Shutdown() {
