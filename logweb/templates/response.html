@@ -1,0 +1,86 @@
+<!doctype html>
+<html>
+<head>
+    <title>logweb</title>
+    <meta charset="UTF-8" />
+    <meta name="author" content="Kyle Isom" />
+    <link href="/assets/css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/png" href="/assets/img/favicon.png" />
+    <style type="text/css">
+   html,
+    body {
+        height: 100%;
+        padding-top: 60px;
+
+    }
+
+
+    #wrap {
+        min-height: 80%;
+        height: auto !important;
+        height: 90%;
+
+        margin: 0 auto -60px;
+    }
+
+
+    #push,
+    #footer {
+        height: 60px;
+    }
+    #footer {
+        background-color: #f5f5f5;
+    }
+
+    .mono {
+        font-family: monospace;
+    }
+
+    h1,h2,h3 {
+        text-align:center;
+    }
+
+
+    @media (max-width: 767px) {
+        #footer {
+            margin-left: -20px;
+            margin-right: -20px;
+            padding-left: 20px;
+            padding-right: 20px;
+        }
+    }
+    </style>
+</head>
+<body>
+  <div id="wrap">
+    <div class="container">
+      <div class="row">
+          <div class="span2"></div>
+          <div class="span8">
+  <h1>Response Times</h1>
+{{range .}}
+  <h4>{{.Node}}</h3>
+  <ul>
+    <li>GET: {{.Get}}µs</li>
+    <li>SET: {{.Set}}µs</li>
+    <li>DEL: {{.Del}}µs</li>
+    <li>LST: {{.Lst}}µs</li>
+  </ul>
+{{end}}
+          <div class="span2"></div>
+        </div>
+      </div>
+
+<div class="footer">
+    <!-- the default version of this stylesheet uses the
+            Bootstrap stylesheet (http://twitter.github.com/bootstrap/)
+            which is licensed under the Apache License v2.0
+            (http://www.apache.org/licenses/LICENSE-2.0). -->
+    <div class="container">
+        <p class="muted credit" style="text-align:center"><br>
+                Built by <a href="http://gokyle.github.com/">Kyle Isom</a> circa 2012.<br>
+            Powered by <a href="http://www.golang.org">Go</a>.</p>
+            </div>
+        </div>
+  </body>
+</html>
