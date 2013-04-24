@@ -9,6 +9,7 @@ util/kludge/kludge
 ## these are ignored once they are established because they should be
 ## autoupdated with the node's ID for the log host
 kludge_server/serverrc
+kludge_backend/backendrc
 *.log
 *.db
 
