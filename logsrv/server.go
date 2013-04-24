@@ -38,7 +38,7 @@ var (
 	cliChan  chan *clientEntry
 )
 
-var logSplit = regexp.MustCompile("^([\\w-:]+) (\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}) (.+)$")
+var logSplit = regexp.MustCompile("^([\\w-:]+) (\\d+) (.+)$")
 var responseCheck = regexp.MustCompile("(\\w+) response time: (\\d+)us$")
 
 func init() {
@@ -53,9 +53,20 @@ func init() {
 	cliChan = make(chan *clientEntry, *flLogBuffer)
 
 	tables = make(map[string]string, 0)
-	tables["entries"] = "CREATE TABLE entries (node text, timestamp integer, message string)"
-	tables["response_time"] = "CREATE TABLE response_time (node text, timestamp integer, microsec integer, operation text)"
-	tables["clients"] = "CREATE TABLE clients (address text, timestamp integer, online integer)"
+	tables["entries"] = `CREATE TABLE entries (id integer primary key,
+                node text,
+                timestamp integer,
+                message string)`
+	tables["response_time"] = `CREATE TABLE response_time (
+                id integer primary key,
+                node text,
+                timestamp integer,
+                microsec integer,
+                operation text)`
+	tables["clients"] = `CREATE TABLE clients (id integer,
+                address text,
+                timestamp integer,
+                online integer)`
 }
 
 func main() {
@@ -124,7 +135,7 @@ func processMessage(conn net.Conn) {
 			}
 			break
 		} else if msg == "" {
-			break
+			continue
 		}
 		msg = strings.Trim(string(msg), "\n \t")
 		fmt.Println("-- ", msg)
@@ -132,13 +143,14 @@ func processMessage(conn net.Conn) {
 		nodeID := logSplit.ReplaceAllString(msg, "$1")
 		dateString := logSplit.ReplaceAllString(msg, "$2")
 		logMsg := logSplit.ReplaceAllString(msg, "$3")
-		tm, err := time.Parse(tsFormat, dateString)
+		timestamp, err := strconv.ParseInt(dateString, 10, 64)
 		if err != nil {
-			fmt.Fprintf(os.Stderr, "[!] error parsing time %s: %s\n",
-				dateString, err.Error())
-			return
+			fmt.Println("[!] error parsing timestamp:", err.Error())
+			continue
 		}
-		le := &logEntry{nodeID, tm.UTC().Unix(), logMsg}
+
+		le := &logEntry{nodeID, timestamp, logMsg}
+		fmt.Printf("[+] timestamp: %d\n", le.Time)
 		logChan <- le
 	}
 	fmt.Println("[+] client disconnected:", conn.RemoteAddr())
@@ -174,8 +186,8 @@ func log() {
 }
 
 func writeLogEntry(db *sql.DB, le *logEntry) {
-	_, err := db.Exec("insert into entries values (?, ?, ?)",
-		le.Node, le.Time, le.Msg)
+	_, err := db.Exec(`insert into entries (node, timestamp, message)
+            values (?, ?, ?)`, le.Node, le.Time, le.Msg)
 	if err != nil {
 		fmt.Println("[!] database error:", err.Error())
 		return
@@ -189,8 +201,9 @@ func writeLogEntry(db *sql.DB, le *logEntry) {
 			fmt.Println("[!] error reading response time:", err.Error())
 			return
 		}
-		_, err = db.Exec("insert into response_time values (?, ?, ?, ?)",
-			le.Node, le.Time, rTime, opName)
+		_, err = db.Exec(`insert into response_time
+                        (node, timestamp, microsec, operation)
+                        values (?, ?, ?, ?)`, le.Node, le.Time, rTime, opName)
 		if err != nil {
 			fmt.Println("[!] error writing to database:", err.Error())
 		}
@@ -198,8 +211,8 @@ func writeLogEntry(db *sql.DB, le *logEntry) {
 }
 
 func writeClientEntry(db *sql.DB, cli *clientEntry) {
-	_, err := db.Exec("insert into clients values (?, ?, ?)",
-		cli.Addr, cli.Time, cli.Online)
+	_, err := db.Exec(`insert into clients (address, timestamp, online)
+                values (?, ?, ?)`, cli.Addr, cli.Time, cli.Online)
 	if err != nil {
 		fmt.Println("[!] database error:", err.Error())
 	}
@@ -240,14 +253,14 @@ func checkTable(tableName, tableSQL string) {
 		fmt.Println("[!] error reading database:", err.Error())
 		os.Exit(1)
 	} else if tblSql == "" {
-		fmt.Println("[+] creating table")
+		fmt.Println("\t\t[+] creating table")
 		_, err = db.Exec(tableSQL)
 		if err != nil {
 			fmt.Println("[!] error creating table:", err.Error())
 			os.Exit(1)
 		}
 	} else if tblSql != tableSQL {
-		fmt.Println("[+] schema out of sync")
+		fmt.Println("\t\t[+] schema out of sync")
 		_, err = db.Exec("drop table " + tableName)
 		if err != nil {
 			fmt.Println("[!] error dropping table:", err.Error())
@@ -258,6 +271,6 @@ func checkTable(tableName, tableSQL string) {
 			fmt.Println("[!] error creating table:", err.Error())
 			os.Exit(1)
 		}
-		fmt.Printf("[+] table %s updated\n", tableName)
+		fmt.Printf("\t[+] table %s updated\n", tableName)
 	}
 }
