@@ -39,7 +39,7 @@ var (
 )
 
 var logSplit = regexp.MustCompile("^([\\w-:]+) (\\d{4}/\\d{2}/\\d{2} \\d{2}:\\d{2}:\\d{2}) (.+)$")
-var responseCheck = regexp.MustCompile("response time: (\\d+)us$")
+var responseCheck = regexp.MustCompile("(\\w+) response time: (\\d+)us$")
 
 func init() {
 	flLogBuffer := flag.Uint("b", 16, "log entries to buffer")
@@ -54,7 +54,7 @@ func init() {
 
 	tables = make(map[string]string, 0)
 	tables["entries"] = "CREATE TABLE entries (node text, timestamp integer, message string)"
-	tables["response_time"] = "CREATE TABLE response_time (node text, timestamp integer, microsec integer)"
+	tables["response_time"] = "CREATE TABLE response_time (node text, timestamp integer, microsec integer, operation text)"
 	tables["clients"] = "CREATE TABLE clients (address text, timestamp integer, online integer)"
 }
 
@@ -182,14 +182,15 @@ func writeLogEntry(db *sql.DB, le *logEntry) {
 	}
 
 	if responseCheck.MatchString(le.Msg) {
-		respString := responseCheck.ReplaceAllString(le.Msg, "$1")
+		opName := responseCheck.ReplaceAllString(le.Msg, "$1")
+		respString := responseCheck.ReplaceAllString(le.Msg, "$2")
 		rTime, err := strconv.Atoi(respString)
 		if err != nil {
 			fmt.Println("[!] error reading response time:", err.Error())
 			return
 		}
-		_, err = db.Exec("insert into response_time values (?, ?, ?)",
-			le.Node, le.Time, rTime)
+		_, err = db.Exec("insert into response_time values (?, ?, ?, ?)",
+			le.Node, le.Time, rTime, opName)
 		if err != nil {
 			fmt.Println("[!] error writing to database:", err.Error())
 		}
