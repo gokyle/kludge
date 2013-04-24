@@ -20,12 +20,12 @@ $(MANPAGE): $(MANDIR)
 	install $(TARGET).1 $(MANPAGE)
 
 $(UPSTART_DIR)/$(UPSTART): $(UPSTART)
-	install $(UPSTART) $(UPSTART_DIR)/$(UPSTART)
+	install -m 644 $(UPSTART) $(UPSTART_DIR)/$(UPSTART)
 
 $(DBDIR):
 	install -d $(DBDIR)
 
-install: $(TARGET) $(MANPAGE) $(UPSTART_DIR)/$(UPSTART)
+install: $(TARGET) $(MANPAGE) $(UPSTART_DIR)/$(UPSTART) $(DBDIR)
 	install $(TARGET) $(BINDIR)/$(TARGET)
 
 uninstall:
