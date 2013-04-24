@@ -4,6 +4,11 @@ kludge_backend/kludge_backend
 kludge_backend/data
 kludge_server/kludge_server
 util/kludge/kludge
+
+# config files
+## these are ignored once they are established because they should be
+## autoupdated with the node's ID for the log host
+kludge_server/serverrc
 *.log
 *.db
 
