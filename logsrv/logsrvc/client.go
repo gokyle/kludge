@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"time"
 )
 
 // Logger is value capable of sending logs to the log server.
@@ -37,7 +38,7 @@ func Connect(node, addr string) (logger *Logger, err error) {
 		logger.conn.SetKeepAlive(true)
 		log.SetOutput(logger.conn)
 	}
-	log.SetPrefix(logger.node + " ")
+	log.SetFlags(0)
 	return
 }
 
@@ -47,23 +48,41 @@ func Connect(node, addr string) (logger *Logger, err error) {
 // to log messages, making additional timestamps unnecessary and
 // causing them to clutter up the logs.
 func (logger *Logger) Print(args ...interface{}) {
-	fmt.Println(args...)
+	ts := time.Now().Unix()
+	precur := fmt.Sprintf("%s %d ", logger.node, ts)
+
+	logargs := make([]interface{}, 0)
+	logargs = append(logargs, precur)
+	logargs = append(logargs, args...)
+
+	fmt.Println(logargs...)
+
 	if logger.conn != nil {
-		log.Print(args...)
+		log.Print(logargs...)
 	}
 }
 
 func (logger *Logger) Printf(format string, args ...interface{}) {
+	ts := time.Now().Unix()
+	precur := fmt.Sprintf("%s %d ", logger.node, ts)
+
 	if logger.conn != nil {
-		log.Printf(format, args...)
+		log.Printf(precur+format, args...)
 	}
-	fmt.Printf(format+"\n", args...)
+	fmt.Printf(precur+format+"\n", args...)
 }
 
 func (logger *Logger) Println(args ...interface{}) {
-	fmt.Println(args...)
+	ts := time.Now().Unix()
+	precur := fmt.Sprintf("%s %d", logger.node, ts)
+
+	logargs := make([]interface{}, 0)
+	logargs = append(logargs, precur)
+	logargs = append(logargs, args...)
+
+	fmt.Println(logargs...)
 	if logger.conn != nil {
-		log.Println(args...)
+		log.Println(logargs...)
 	}
 }
 
