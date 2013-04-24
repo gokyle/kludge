@@ -167,7 +167,7 @@ func log() {
 			}
 			writeClientEntry(db, client)
 		default:
-			<-time.After(1 * time.Millisecond)
+			<-time.After(1 * time.Nanosecond)
 		}
 	}
 }
