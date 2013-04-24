@@ -141,6 +141,7 @@ func processMessage(conn net.Conn) {
 		le := &logEntry{nodeID, tm.UTC().Unix(), logMsg}
 		logChan <- le
 	}
+	fmt.Println("[+] client disconnected:", conn.RemoteAddr())
 	client.Online = 0
 	cliChan <- client
 }
