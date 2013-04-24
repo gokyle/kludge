@@ -132,6 +132,7 @@ func Key(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	defer logger.Shutdown()
 	address = "127.0.0.1:8080"
 	http.HandleFunc("/data", Key)
 	http.HandleFunc("/data/", Key)
