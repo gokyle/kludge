@@ -97,7 +97,7 @@ func TestLst(t *testing.T) {
 	if err != nil {
 		fmt.Println("[!] failed to retrieve key listing:", err.Error())
 		t.FailNow()
-	} else if len(keys) != 1 {
+	} else if len(keys) == 0 {
 		fmt.Printf("[!] unexpected number of keys (%d, expected 1)\n",
 			len(keys))
 		t.FailNow()
