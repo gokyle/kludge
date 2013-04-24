@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+        "os"
 )
 
 // Logger is value capable of sending logs to the log server.
@@ -56,4 +57,19 @@ func (logger *Logger) Println(args ...interface{}) {
 
 func (logger *Logger) Shutdown() {
 	logger.conn.Close()
+}
+
+func (logger *Logger) Fatal(args ...interface{}) {
+	logger.Print(args...)
+	os.Exit(1)
+}
+
+func (logger *Logger) Fatalf(format string, args ...interface{}) {
+	logger.Printf(format, args...)
+	os.Exit(1)
+}
+
+func (logger *Logger) Fatalln(args ...interface{}) {
+	logger.Println(args...)
+	os.Exit(1)
 }
