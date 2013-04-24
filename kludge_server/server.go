@@ -17,7 +17,6 @@ var (
 	configFile string
 	address    string
 	nodeID     string
-	logserver  string
 	logger     *logsrvc.Logger
 )
 
@@ -174,7 +173,7 @@ func initLogging(cfg map[string]string) (regen bool) {
 		}
 		regen = true
 	}
-	logserver = cfg["loghost"]
+	logserver := cfg["loghost"]
 
 	logger, err = logsrvc.Connect("srv:"+nodeID, logserver)
 	if err != nil {
