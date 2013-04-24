@@ -1,11 +1,24 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"github.com/gokyle/goconfig"
 	"github.com/gokyle/kludge/common"
+	"github.com/gokyle/kludge/logsrv/logsrvc"
+	"github.com/gokyle/uuid"
 	"io"
-	"log"
 	"net/http"
+	"os"
 	"regexp"
+)
+
+var (
+	configFile string
+	address    string
+	nodeID     string
+	logserver  string
+	logger     *logsrvc.Logger
 )
 
 var keyIDRegexp = regexp.MustCompile("^/data/(.+)$")
@@ -80,7 +93,7 @@ func SetKey(w http.ResponseWriter, r *http.Request) {
 	}
 	_, err := io.ReadFull(r.Body, value)
 	if err != nil {
-		log.Printf("request for %s failed: %s", r.URL.String(),
+		logger.Printf("request for %s failed: %s", r.URL.String(),
 			err.Error())
 		ServerError(w, err)
 		return
@@ -97,7 +110,7 @@ func SetKey(w http.ResponseWriter, r *http.Request) {
 }
 
 func Key(w http.ResponseWriter, r *http.Request) {
-	log.Printf("%s request to %s", r.Method, r.URL.String())
+	logger.Printf("%s request to %s", r.Method, r.URL.String())
 	VersionHeader(w)
 	switch r.Method {
 	case "GET":
@@ -111,7 +124,7 @@ func Key(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		return
 	default:
-		log.Print("received unsupported request for method ",
+		logger.Print("received unsupported request for method ",
 			r.Method)
 		NotImplemented(w, r)
 
@@ -119,7 +132,53 @@ func Key(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	address = "127.0.0.1:8080"
 	http.HandleFunc("/data", Key)
 	http.HandleFunc("/data/", Key)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	logger.Println("serving on", address)
+	logger.Fatal(http.ListenAndServe(address, nil))
+}
+
+func init() {
+	cfgFile := flag.String("f", "/etc/kludge/serverrc",
+		"configuration file")
+	flag.Parse()
+
+	cfg, err := goconfig.ParseFile(*cfgFile)
+	if err != nil {
+		fmt.Println("failed to parse configuration file:", err.Error())
+		os.Exit(1)
+	}
+	regen := initLogging(cfg["logging"])
+	if regen {
+		cfg["logging"]["node_id"] = nodeID
+		err = cfg.WriteFile(*cfgFile)
+		if err != nil {
+			fmt.Println("failed to update config file:",
+				err.Error())
+			os.Exit(1)
+		}
+	}
+}
+
+func initLogging(cfg map[string]string) (regen bool) {
+	var err error
+
+	nodeID = cfg["node_id"]
+	if nodeID == "" {
+		nodeID, err = uuid.GenerateV4String()
+		if err != nil {
+			fmt.Println("failed to generate node ID:", err.Error())
+			os.Exit(1)
+		}
+		regen = true
+	}
+	logserver = cfg["loghost"]
+
+	logger, err = logsrvc.Connect(nodeID, logserver)
+	if err != nil {
+		fmt.Println("failed to set up log host:", err.Error())
+		os.Exit(1)
+	}
+	return
 }
