@@ -6,6 +6,7 @@ MANDIR = $(INSTALL_DIR)/share/man/man1
 MANPAGE = $(MANDIR)/$(TARGET).1
 UPSTART_DIR = /etc/init
 UPSTART = $(TARGET).conf
+DBDIR = /var/run/$(TARGET)
 
 all: $(TARGET)
 
@@ -13,13 +14,16 @@ $(TARGET): $(SOURCES)
 	go build -o $(TARGET)
 
 $(MANDIR):
-	install -D $(MANDIR)
+	install -d $(MANDIR)
 
 $(MANPAGE): $(MANDIR)
 	install $(TARGET).1 $(MANPAGE)
 
 $(UPSTART_DIR)/$(UPSTART): $(UPSTART)
 	install $(UPSTART) $(UPSTART_DIR)/$(UPSTART)
+
+$(DBDIR):
+	install -d $(DBDIR)
 
 install: $(TARGET) $(MANPAGE) $(UPSTART_DIR)/$(UPSTART)
 	install $(TARGET) $(BINDIR)/$(TARGET)
