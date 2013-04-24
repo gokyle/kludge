@@ -188,7 +188,7 @@ func writeLogEntry(db *sql.DB, le *logEntry) {
 			fmt.Println("[!] error reading response time:", err.Error())
 			return
 		}
-		_, err = db.Exec("insert into response_times values (?, ?, ?)",
+		_, err = db.Exec("insert into response_time values (?, ?, ?)",
 			le.Node, le.Time, rTime)
 		if err != nil {
 			fmt.Println("[!] error writing to database:", err.Error())
