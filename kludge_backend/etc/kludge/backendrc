@@ -4,5 +4,4 @@ pool_size = 16
 
 [ logging ]
 loghost = verne.local:5988
-node_id = 8B251457-CC04-4498-85D3-BE6571306334
 
