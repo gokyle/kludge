@@ -38,8 +38,8 @@ $(CONFDIR):
 $(CONFDIR)/$(TARGET)rc: $(CONFIG) $(CONFDIR)
 	install -m 0644 $(CONFIG) $(CONFDIR)/$(TARGET)rc
 
-assets-install: assets/css/bootstrap.css
-	install -C -m 0644 assets $(SHARE)/$(TARGET)
+assets-install: assets/css/bootstrap.css $(SHARE)
+	install -D -m 0644 assets/css/bootstrap.css $(SHARE)/$(TARGET)/assets/css/bootstrap.css
 
 templates-install: $(TEMPLATES)
 	install -C -d $(SHARE)/$(TARGET)/templates
