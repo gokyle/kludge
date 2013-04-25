@@ -47,7 +47,7 @@ templates-install: $(TEMPLATES)
 
 pre-install: $(CONFDIR)/$(TARGET)rc assets-install templates-install
 
-install: $(TARGET) pre-install $(INITDIR)/$(TARGET) $(DBDIR) 
+install: $(TARGET) pre-install $(INITDIR)/$(TARGET) $(DBDIR) $(MANPAGE)
 	install $(TARGET) $(BINDIR)/$(TARGET)
 
 uninstall:
