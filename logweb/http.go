@@ -14,6 +14,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 var (
@@ -159,11 +160,50 @@ func response(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf.Bytes())
 }
 
-func logs(w http.ResponseWriter, r *http.Request) {
+func logs_all(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("%s request from %s to %s", r.Method,
 		r.RemoteAddr, r.URL.Path)
 
-	entries, err := getLastHour()
+	entries, err := logsFrom(0)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	page, err := ioutil.ReadFile(templatePath("logs.html"))
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	tpl := template.New("logs")
+	tpl, err = tpl.Parse(string(page))
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+	err = tpl.Execute(buf, entries)
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	w.Write(buf.Bytes())
+}
+
+func logs_hourly(w http.ResponseWriter, r *http.Request) {
+	logger.Printf("%s request from %s to %s", r.Method,
+		r.RemoteAddr, r.URL.Path)
+
+	hour, err := time.ParseDuration("-1h")
+	if err != nil {
+		serverError(w, err)
+		return
+	}
+	when := time.Now().Add(hour).Unix()
+
+	entries, err := logsFrom(when)
 	if err != nil {
 		serverError(w, err)
 		return
@@ -221,7 +261,8 @@ func root(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	http.HandleFunc("/response/", response)
-	http.HandleFunc("/logs/hourly", logs)
+	http.HandleFunc("/logs/all", logs_all)
+	http.HandleFunc("/logs/hourly", logs_hourly)
 	http.HandleFunc("/", root)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(assetDir))))
 	logger.Printf("logweb listing on http://%s/", addr)

@@ -78,12 +78,7 @@ func getNodeAverages(node string) (resp *responseTime, err error) {
 	return
 }
 
-func getLastHour() (entries []*logEntry, err error) {
-	hour, err := time.ParseDuration("-1h")
-	if err != nil {
-		return
-	}
-
+func logsFrom(when int64) (entries []*logEntry, err error) {
 	db, err := sql.Open("sqlite3", dbFile)
 	if err != nil {
 		return
@@ -98,10 +93,9 @@ func getLastHour() (entries []*logEntry, err error) {
 	)
 
 	entries = make([]*logEntry, 0)
-	whence := time.Now().Add(hour).Unix()
 	rows, err := db.Query(`select * from entries 
             where timestamp > ? 
-            order by timestamp desc`, whence)
+            order by timestamp desc`, when)
 	if err != nil {
 		return
 	}
