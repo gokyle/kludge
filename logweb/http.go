@@ -163,6 +163,7 @@ func response(w http.ResponseWriter, r *http.Request) {
 func logs_all(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("%s request from %s to %s", r.Method,
 		r.RemoteAddr, r.URL.Path)
+	start := time.Now().UnixNano()
 
 	entries, err := logsFrom(0)
 	if err != nil {
@@ -172,6 +173,8 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 
 	if filepath.Ext(r.URL.Path) == ".txt" {
 		dump_log(entries, w)
+		rtime := (time.Now().UnixNano() - start) / 1000.0
+		logger.Printf("GET response time: %dus", rtime)
 		return
 	}
 
@@ -195,9 +198,13 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Write(buf.Bytes())
+	rtime := (time.Now().UnixNano() - start) / 1000.0
+	logger.Printf("GET response time: %dus", rtime)
 }
 
 func dump_log(entries []*logEntry, w http.ResponseWriter) {
+	logger.Printf("dumping %d entries to text file", len(entries))
+	w.Header().Add("content-type", "text-plain")
 	for i := len(entries); i != 0; i++ {
 		logLine := fmt.Sprintf("%s %s %s", entries[i].Time,
 			entries[i].Node, entries[i].Msg)
