@@ -25,12 +25,12 @@ $(INITDIR)/$(TARGET): $(INITSRC)/$(TARET)
 $(DBDIR):
 	install -d $(DBDIR)
 
-install: $(TARGET) $(MANPAGE) $(UPSTART_DIR)/$(UPSTART) $(DBDIR)
+install: $(TARGET) $(MANPAGE) $(INITDIR)/$(TARGET) $(DBDIR)
 	install $(TARGET) $(BINDIR)/$(TARGET)
 
 uninstall:
 	rm -f $(MANPAGE)
-	rm -f $(UPSTART_DIR)/$(UPSTART)
+	rm -f $(INITDIR)/$(TARGET)
 	rm -f $(BINDIR)/$(TARGET)
 
 clean:
