@@ -4,8 +4,8 @@ INSTALL_DIR = /usr/local
 BINDIR = $(INSTALL_DIR)/bin
 MANDIR = $(INSTALL_DIR)/share/man/man1
 MANPAGE = $(MANDIR)/$(TARGET).1
-UPSTART_DIR = /etc/init
-UPSTART = $(TARGET).conf
+INITDIR = /etc/init.d/
+INITSRC = etc/init.d
 DBDIR = /var/run/$(TARGET)
 
 all: $(TARGET)
@@ -19,8 +19,8 @@ $(MANDIR):
 $(MANPAGE): $(MANDIR)
 	install $(TARGET).1 $(MANPAGE)
 
-$(UPSTART_DIR)/$(UPSTART): $(UPSTART)
-	install -m 644 $(UPSTART) $(UPSTART_DIR)/$(UPSTART)
+$(INITDIR)/$(TARGET): $(INITSRC)/$(TARET)
+	install -m 644 $(INITSRC)/$(TARGET) $(INITDIR)/$(TARGET)
 
 $(DBDIR):
 	install -d $(DBDIR)
