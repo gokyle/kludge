@@ -1,0 +1,55 @@
+.Dd $Mdocdate$
+.Dt PROGNAME section
+.Os
+.Sh NAME
+.Nm logweb
+.Nd kludge log server web interface
+.Sh SYNOPSIS
+.Nm
+.Op -f Ar config_file
+.Sh DESCRIPTION
+.Nm
+provides an HTTP interface to the
+.Xr logsrv 1
+log server.
+.Sh CONFIG FILE
+The configuration files uses
+.Lk http://godoc.org/github.com/gokyle/goconfig "goconfig"
+style configuration files. An example configuration file
+is
+.Bd -literal
+[ server ]
+address = :8080
+database = /var/run/logsrv/logsrv.db
+assets = /usr/local/share/logweb/assets
+templates = /usr/local/share/logweb/templates
+
+[ logging ]
+loghost = loghost.local:5988
+.Ed
+The logging section contains information for logging to the log server;
+applicable values are
+.Bl -tag bullet -width .Ds
+.It
+loghost: the address:port where the log server resides.
+.It
+node_id: the identifier to use in log messages for this service.
+.El
+The server section contains configuration options for the web server.
+Acceptable values are
+.Bl -tag bullet -width .Ds
+.It
+address: the web server's address; a port is required. The value ":<port>"
+will cause the web server to listen on all interfaces.
+.It
+database: the path to the
+.Xr logsrv 1
+database file.
+.It
+assets: the path to the assets directory
+templates: the path to the directory containing the templates.
+.El
+.Sh AUTHORS
+.Nm
+was written by
+.An Kyle Isom Aq Mt kyle@gokyle.net .
