@@ -1,6 +1,8 @@
 [ server ]
 address = localhost:8080
 database = /var/run/logsrc/logs.db
+assets = /usr/local/share/logweb/assets
+templates = /usr/local/share/logweb/templates
 
 [ logging ]
 loghost = verne.local:5988

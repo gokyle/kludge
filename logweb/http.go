@@ -11,6 +11,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+        "path/filepath"
 )
 
 var (
@@ -18,6 +19,8 @@ var (
 	dbFile string
 	nodeID string
 	logger *logsrvc.Logger
+        tplDir string
+        assetDir string
 )
 
 func initLogging(cfgmap goconfig.ConfigMap) (regen bool) {
@@ -63,6 +66,14 @@ func initServer(cfgmap goconfig.ConfigMap) (regen bool) {
 	if dbFile, ok = cfg["database"]; !ok {
 		logger.Fatal("no database file configured")
 	}
+
+        if assetDir, ok = cfg["assets"]; !ok {
+                assetDir = "assets"
+        }
+
+        if tplDir, ok = cfg["templates"]; !ok {
+                tplDir = "templates"
+        }
 	return false
 }
 
@@ -84,6 +95,10 @@ func init() {
 	if initServer(cfg) {
 		updateConfig(cfg, *configFile)
 	}
+}
+
+func templatePath(name string) string {
+        return filepath.Join(tplDir, name)
 }
 
 func updateConfig(cfg goconfig.ConfigMap, cfgFile string) {
@@ -121,7 +136,7 @@ func response(w http.ResponseWriter, r *http.Request) {
 		nodes = append(nodes, node)
 	}
 
-	page, err := ioutil.ReadFile("templates/response.html")
+	page, err := ioutil.ReadFile(templatePath("response.html"))
 	if err != nil {
 		serverError(w, err)
 		return
@@ -152,7 +167,7 @@ func logs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page, err := ioutil.ReadFile("templates/logs.html")
+	page, err := ioutil.ReadFile(templatePath("logs.html"))
 	if err != nil {
 		serverError(w, err)
 		return
@@ -178,7 +193,7 @@ func root(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("%s request from %s to %s", r.Method,
 		r.RemoteAddr, r.URL.Path)
 
-	indexFile, err := ioutil.ReadFile("templates/index.html")
+	indexFile, err := ioutil.ReadFile(templatePath("index.html"))
 	if err != nil {
 		serverError(w, err)
 		return
@@ -206,7 +221,7 @@ func main() {
 	http.HandleFunc("/response/", response)
 	http.HandleFunc("/logs/hourly", logs)
 	http.HandleFunc("/", root)
-	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir("assets/"))))
+	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(assetDir))))
 	logger.Printf("logweb listing on http://%s/", addr)
 	logger.Fatal(http.ListenAndServe(addr, nil))
 }
