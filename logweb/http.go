@@ -11,7 +11,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 )
 
 var (
@@ -223,5 +225,10 @@ func main() {
 	http.HandleFunc("/", root)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(assetDir))))
 	logger.Printf("logweb listing on http://%s/", addr)
-	logger.Fatal(http.ListenAndServe(addr, nil))
+	go http.ListenAndServe(addr, nil)
+	sigc := make(chan os.Signal, 1)
+	signal.Notify(sigc, os.Kill, os.Interrupt, syscall.SIGTERM)
+	fmt.Println("[+] waiting for shutdown signal")
+	<-sigc
+	logger.Println("logweb shutdown")
 }
