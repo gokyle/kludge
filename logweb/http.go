@@ -11,16 +11,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-        "path/filepath"
+	"path/filepath"
 )
 
 var (
-	addr   string
-	dbFile string
-	nodeID string
-	logger *logsrvc.Logger
-        tplDir string
-        assetDir string
+	addr     string
+	dbFile   string
+	nodeID   string
+	logger   *logsrvc.Logger
+	tplDir   string
+	assetDir string
 )
 
 func initLogging(cfgmap goconfig.ConfigMap) (regen bool) {
@@ -67,13 +67,13 @@ func initServer(cfgmap goconfig.ConfigMap) (regen bool) {
 		logger.Fatal("no database file configured")
 	}
 
-        if assetDir, ok = cfg["assets"]; !ok {
-                assetDir = "assets"
-        }
+	if assetDir, ok = cfg["assets"]; !ok {
+		assetDir = "assets"
+	}
 
-        if tplDir, ok = cfg["templates"]; !ok {
-                tplDir = "templates"
-        }
+	if tplDir, ok = cfg["templates"]; !ok {
+		tplDir = "templates"
+	}
 	return false
 }
 
@@ -98,7 +98,7 @@ func init() {
 }
 
 func templatePath(name string) string {
-        return filepath.Join(tplDir, name)
+	return filepath.Join(tplDir, name)
 }
 
 func updateConfig(cfg goconfig.ConfigMap, cfgFile string) {
