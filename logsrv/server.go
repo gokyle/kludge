@@ -36,6 +36,7 @@ var (
 	dbFile   string
 	logChan  chan *logEntry
 	cliChan  chan *clientEntry
+	rawChan  chan string
 )
 
 var logSplit = regexp.MustCompile("^([\\w-:]+) (\\d+) (.+)$")
@@ -51,6 +52,7 @@ func init() {
 	dbFile = *flDbFile
 	logChan = make(chan *logEntry, *flLogBuffer)
 	cliChan = make(chan *clientEntry, *flLogBuffer)
+	rawChan = make(chan string, *flLogBuffer)
 
 	tables = make(map[string]string, 0)
 	tables["entries"] = `CREATE TABLE entries (id integer primary key,
@@ -63,10 +65,15 @@ func init() {
                 timestamp integer,
                 microsec integer,
                 operation text)`
-	tables["clients"] = `CREATE TABLE clients (id integer,
+	tables["clients"] = `CREATE TABLE clients (
+                id integer primary key,
                 address text,
                 timestamp integer,
                 online integer)`
+	tables["raw_logs"] = `CREATE TABLE raw_logs (
+                id integer primary key,
+                timestamp integer,
+                entry text)`
 }
 
 func main() {
@@ -139,6 +146,7 @@ func processMessage(conn net.Conn) {
 		}
 		msg = strings.Trim(string(msg), "\n \t")
 		fmt.Println("-- ", msg)
+		rawChan <- msg
 
 		nodeID := logSplit.ReplaceAllString(msg, "$1")
 		dateString := logSplit.ReplaceAllString(msg, "$2")
@@ -150,7 +158,6 @@ func processMessage(conn net.Conn) {
 		}
 
 		le := &logEntry{nodeID, timestamp, logMsg}
-		fmt.Printf("[+] timestamp: %d\n", le.Time)
 		logChan <- le
 	}
 	fmt.Println("[+] client disconnected:", conn.RemoteAddr())
@@ -179,6 +186,11 @@ func log() {
 				return
 			}
 			writeClientEntry(db, client)
+		case message, ok := <-rawChan:
+			if !ok {
+				return
+			}
+			writeRawEntry(db, message)
 		}
 	}
 }
@@ -211,6 +223,14 @@ func writeLogEntry(db *sql.DB, le *logEntry) {
 func writeClientEntry(db *sql.DB, cli *clientEntry) {
 	_, err := db.Exec(`insert into clients (address, timestamp, online)
                 values (?, ?, ?)`, cli.Addr, cli.Time, cli.Online)
+	if err != nil {
+		fmt.Println("[!] database error:", err.Error())
+	}
+}
+
+func writeRawEntry(db *sql.DB, msg string) {
+	_, err := db.Exec(`insert into raw_logs (timestamp, entry)
+                values (?, ?)`, time.Now().Unix(), msg)
 	if err != nil {
 		fmt.Println("[!] database error:", err.Error())
 	}
