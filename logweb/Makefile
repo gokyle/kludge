@@ -35,7 +35,7 @@ $(SHARE):
 $(CONFDIR):
 	install -d $(CONFDIR)
 
-$(CONFDIR)/$(TARGET)rc: $(CONFIG)
+$(CONFDIR)/$(TARGET)rc: $(CONFIG) $(CONFDIR)
 	install -m 0644 $(CONFIG) $(CONFDIR)/$(TARGET)rc
 
 assets-install: assets/css/bootstrap.css
