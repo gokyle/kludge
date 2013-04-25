@@ -205,8 +205,8 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 func dump_log(entries []*logEntry, w http.ResponseWriter) {
 	logger.Printf("dumping %d entries to text file", len(entries))
 	w.Header().Add("content-type", "text-plain")
-	for i := len(entries); i != 0; i++ {
-		logLine := fmt.Sprintf("%s %s %s", entries[i].Time,
+	for i := len(entries) - 1; i != 0; i-- {
+		logLine := fmt.Sprintf("%s %s %s\n", entries[i].Time,
 			entries[i].Node, entries[i].Msg)
 		w.Write([]byte(logLine))
 	}
