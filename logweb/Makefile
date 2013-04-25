@@ -45,7 +45,9 @@ templates-install: $(TEMPLATES)
 	install -C -d $(SHARE)/$(TARGET)/templates
 	install -C -m 0644 $(TEMPLATES) $(SHARE)/$(TARGET)/templates/
 
-install: $(TARGET) $(MANPAGE) $(INITDIR)/$(TARGET) $(DBDIR)
+pre-install: $(CONFDIR)/$(TARGET)rc assets-install templates-install
+
+install: $(TARGET) pre-install $(INITDIR)/$(TARGET) $(DBDIR) 
 	install $(TARGET) $(BINDIR)/$(TARGET)
 
 uninstall:
@@ -56,4 +58,4 @@ uninstall:
 clean:
 	rm -f $(TARGET)
 
-.PHONY: all clean install uninstall
+.PHONY: all clean install uninstall assets-install templates-install pre-install
