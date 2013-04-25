@@ -170,7 +170,7 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if filepath.Ext(r.URL.Path) == "txt" {
+	if filepath.Ext(r.URL.Path) == ".txt" {
 		dump_log(entries, w)
 		return
 	}
@@ -222,7 +222,7 @@ func logs_hourly(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if filepath.Ext(r.URL.Path) == "txt" {
+	if filepath.Ext(r.URL.Path) == ".txt" {
 		dump_log(entries, w)
 		return
 	}
