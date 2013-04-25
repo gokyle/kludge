@@ -170,6 +170,11 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if filepath.Ext(r.URL.Path) == "txt" {
+		dump_log(entries, w)
+		return
+	}
+
 	page, err := ioutil.ReadFile(templatePath("logs.html"))
 	if err != nil {
 		serverError(w, err)
@@ -192,6 +197,14 @@ func logs_all(w http.ResponseWriter, r *http.Request) {
 	w.Write(buf.Bytes())
 }
 
+func dump_log(entries []*logEntry, w http.ResponseWriter) {
+	for i := len(entries); i != 0; i++ {
+		logLine := fmt.Sprintf("%s %s %s", entries[i].Time,
+			entries[i].Node, entries[i].Msg)
+		w.Write([]byte(logLine))
+	}
+}
+
 func logs_hourly(w http.ResponseWriter, r *http.Request) {
 	logger.Printf("%s request from %s to %s", r.Method,
 		r.RemoteAddr, r.URL.Path)
@@ -206,6 +219,11 @@ func logs_hourly(w http.ResponseWriter, r *http.Request) {
 	entries, err := logsFrom(when)
 	if err != nil {
 		serverError(w, err)
+		return
+	}
+
+	if filepath.Ext(r.URL.Path) == "txt" {
+		dump_log(entries, w)
 		return
 	}
 
@@ -248,7 +266,6 @@ func root(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Println("parsed the file")
 	buf := new(bytes.Buffer)
 	err = respTpl.Execute(buf, nil)
 	if err != nil {
@@ -262,7 +279,9 @@ func root(w http.ResponseWriter, r *http.Request) {
 func main() {
 	http.HandleFunc("/response/", response)
 	http.HandleFunc("/logs/all", logs_all)
+	http.HandleFunc("/logs/all.txt", logs_all)
 	http.HandleFunc("/logs/hourly", logs_hourly)
+	http.HandleFunc("/logs/hourly.txt", logs_hourly)
 	http.HandleFunc("/", root)
 	http.Handle("/assets/", http.StripPrefix("/assets/", http.FileServer(http.Dir(assetDir))))
 	logger.Printf("logweb listing on http://%s/", addr)
