@@ -20,7 +20,7 @@ $(MANPAGE): $(MANDIR)
 	install $(TARGET).1 $(MANPAGE)
 
 $(INITDIR)/$(TARGET): $(INITSRC)/$(TARET)
-	install -m 644 $(INITSRC)/$(TARGET) $(INITDIR)/$(TARGET)
+	install -m 755 $(INITSRC)/$(TARGET) $(INITDIR)/$(TARGET)
 
 $(DBDIR):
 	install -d $(DBDIR)
