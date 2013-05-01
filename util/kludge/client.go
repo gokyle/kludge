@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/gokyle/kludge/kludge_client"
+	"github.com/gokyle/kludge/client"
 	"io/ioutil"
 	"os"
 	"strings"
